@@ -31,6 +31,7 @@ Ok, onto notes on the code/approaches:
 The first thing that jumped out to me once I started mapping out how this API would work was more or less: how do I want to model the provider's schedule vs actual appointments? There are a lot of tradeoffs here once you start digging, and I had a lot of fun trying to figure out the best approach. It's especially interesting since there aren't that many doctors relative to people-with-phones, which makes that variable somewhat unique (compared to more public facing apps where scaling could go to x millions "easily") Some initial thoughts were:
 
 1. Do we actually need a Schedules table/data model? Could we just x amount of empty appointments every day? Since there aren't that many doctors in the USA (~1 million), and Henry would only be partnering with a small percent, traditional scaling concerns might not be nearly as relevant. More notes below.
+
 2. Ok then, so we need a way to model schedules, exceptions to shedules, and maintain the relationship to avaialable appointments. This is a better model of the real-world data and relationships, but a fair amount more schema complexity than the option above. More notes below.
 
 ### One option - Timeslots Only, AKA No Schedule, only Appointments.
@@ -72,7 +73,7 @@ _NOTE_ I think you would also use REDIS to store the current day's appointments 
 
 These are smaller notes I wrote as I went along. It's always a bit hard to turn off the part of my brain when I'm doing something I find kinda hacky, so I tried to offload that part of my brain here so I could get through the core route logic.
 
-### 1.0
+### 1.0 - Basic Structure
 
 I opted for the tried and true express to get this up and running. There are a number of things we'd want to flesh out more if we were shipping this to production:
 
@@ -90,7 +91,7 @@ I'm handwaving Auth here. Likely,:
 - Would be handled by API Gateway
 - The BEARER/JWT would have our `providerID`
 
-### 1.2
+### 1.2 - Get Appointments
 
 - Not super clear on if we should actually allow them to fetch a list of appointments earlier than a day out (since we can only reserve >=24 hours out).
 - Not including pagination or filtering here, but we'd want that if the user passes in a large date range. We woul also just block large time ranges to prevent odd behaviour querying for huge unneeded data on our tables.
